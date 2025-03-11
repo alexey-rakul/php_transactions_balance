@@ -3,6 +3,7 @@ const data_table = document.getElementById("data");
 const userSelect = document.getElementById("user");
 
 const updateTable = (data, userName) => {
+    data_table.style.display = "none";
     const table = data_table.querySelector('table');
     const tbody = table.querySelector('tbody') || table.createTBody();
     
@@ -37,7 +38,7 @@ submit_btn.onclick = async function (e) {
         
         updateTable(result.data, userName);
     } catch (error) {
-        console.error('Error:', error);
+        console.error(error.message);
         alert('Error: ' + error.message);
     }
 };

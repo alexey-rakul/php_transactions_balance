@@ -12,12 +12,8 @@ function get_users($conn)
         JOIN transactions t ON a.id = t.account_from OR a.id = t.account_to
     ";
 
-    $statement = $conn->prepare($query);
+    $statement = $conn->query($query, PDO::FETCH_ASSOC);
     if (!$statement) {
-        throw new Exception("Error preparing request");
-    }
-
-    if (!$statement->execute()) {
         throw new Exception("Error executing request");
     }
 
@@ -37,10 +33,10 @@ function get_user_transactions_balances($user_id, $conn)
     $query = "
         SELECT
             strftime('%Y-%m', t.trdate) AS month,
-            SUM(CASE 
-                WHEN a1.user_id = ? AND a2.user_id != ? THEN -t.amount
-                WHEN a2.user_id = ? AND a1.user_id != ? THEN t.amount
-                ELSE 0 
+            SUM(CASE
+                WHEN a1.user_id = a2.user_id THEN 0
+                WHEN a1.user_id = ? THEN -t.amount
+                ELSE t.amount 
             END) AS balance,
             COUNT(t.id) AS transaction_count
         FROM transactions t
@@ -56,8 +52,7 @@ function get_user_transactions_balances($user_id, $conn)
         throw new Exception("Error preparing request");
     }
 
-    $params = array_fill(0, 6, $user_id);
-    if (!$statement->execute($params)) {
+    if (!$statement->execute([$user_id, $user_id, $user_id])) {
         throw new Exception("Error executing request");
     }
 
